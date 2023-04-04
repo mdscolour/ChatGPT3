@@ -1,6 +1,6 @@
 import fs from 'fs'
-// import path from 'path'
 import express from 'express'
+// import GPT3Tokenizer from 'gpt3-tokenizer'
 import type { RequestProps } from './types'
 import type { ChatMessage } from './chatgpt'
 import { chatConfig, chatReplyProcess, currentModel } from './chatgpt'
@@ -116,9 +116,16 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       },
       systemMessage,
     })
+
+    // const tokenizer = new GPT3Tokenizer({ type: 'gpt3' }) // or 'codex'
+    // const messageWhole = JSON.stringify(systemMessage)
+    // const encoded = tokenizer.encode(messageWhole)
+
+    // console.log('Original text:', messageWhole)
+    // console.log('Encoded text:', encoded.text.length)
     // console.log('Encoded prompt length:', prompt.length)
-    config.numberOfUsedTokens += prompt.length
-    // fs.writeFileSync(configPath, JSON.stringify(config))
+
+    config.numberOfUsedTokens += 1
     fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
   }
   catch (error) {
