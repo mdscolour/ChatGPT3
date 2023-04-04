@@ -42,7 +42,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       systemMessage,
     })
     config.numberOfUsedTokens += encode(prompt).length
-    fs.writeFileSync('./config.json', JSON.stringify(config))
+    fs.writeFileSync('./config/config.json', JSON.stringify(config))
   }
   catch (error) {
     res.write(JSON.stringify(error))
