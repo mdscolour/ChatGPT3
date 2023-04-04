@@ -22,6 +22,7 @@ export default {
     download: 'Download',
     noData: 'No Data',
     wrong: 'Something went wrong, please try again later.',
+    maxtokenreach: 'The system reminds you: Your quota has been used up, please contact customer service to increase the quota or buy a larger package.',
     success: 'Success',
     failed: 'Failed',
     verify: 'Verify',

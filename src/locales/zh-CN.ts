@@ -22,6 +22,7 @@ export default {
     download: '下载',
     noData: '暂无数据',
     wrong: '好像出错了，请稍后再试。',
+    maxtokenreach: '系统提醒您：您的额度已用完，请联系客服增加额度或者购买更大的套餐。',
     success: '操作成功',
     failed: '操作失败',
     verify: '验证',

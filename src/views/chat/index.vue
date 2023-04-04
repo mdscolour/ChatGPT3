@@ -156,7 +156,7 @@ async function onConversation() {
     await fetchChatAPIOnce()
   }
   catch (error: any) {
-    const errorMessage = error?.message ?? t('common.wrong')
+    const errorMessage = error?.errorCode === 'TOKEN_LIMIT_REACHED' ? t('common.maxtokenreach') : t('common.wrong')
 
     if (error.message === 'canceled') {
       updateChatSome(
@@ -294,7 +294,7 @@ async function onRegenerate(index: number) {
       return
     }
 
-    const errorMessage = error?.message ?? t('common.wrong')
+    const errorMessage = error?.errorCode === 'TOKEN_LIMIT_REACHED' ? t('common.maxtokenreach') : t('common.wrong')
 
     updateChat(
       +uuid,
