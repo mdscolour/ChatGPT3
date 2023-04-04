@@ -28,8 +28,6 @@ router.post('/apiaaaaa/reset_token_counter', async (req, res) => {
     if (!password || password !== process.env.RESET_PASSWORD)
       return res.status(401).json({ message: 'Incorrect password.' })
 
-    // const configPath = path.resolve(__dirname, 'config', 'config.json')
-    // const configFile = fs.readFileSync(configPath)
     const configFile = fs.readFileSync('./src/config/config.json')
     const config = JSON.parse(configFile.toString())
 
@@ -48,8 +46,6 @@ router.post('/apiaaaaa/reset_token_counter', async (req, res) => {
 
 router.get('/apiaaaaa/token_counter', async (_, res) => {
   try {
-  // const configPath = path.resolve(__dirname, 'config', 'config.json')
-  // const configFile = fs.readFileSync(configPath)
     const configFile = fs.readFileSync('./src/config/config.json')
     const config = JSON.parse(configFile.toString())
 
@@ -63,8 +59,6 @@ router.get('/apiaaaaa/token_counter', async (_, res) => {
 router.post('/chat-process', [auth, limiter], async (req, res) => {
   res.setHeader('Content-type', 'application/octet-stream')
   const maxToken = process.env.MAX_TOKEN_LIMIT
-  // const configPath = path.resolve(__dirname, 'config', 'config.json')
-  // const configFile = fs.readFileSync(configPath)
   const configFile = fs.readFileSync('./src/config/config.json')
 
   const config = JSON.parse(configFile.toString())
