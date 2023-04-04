@@ -1,3 +1,5 @@
+import fs from 'fs'
+import path from 'path'
 import express from 'express'
 import type { RequestProps } from './types'
 import type { ChatMessage } from './chatgpt'
@@ -5,8 +7,6 @@ import { chatConfig, chatReplyProcess, currentModel } from './chatgpt'
 import { auth } from './middleware/auth'
 import { limiter } from './middleware/limiter'
 import { isNotEmptyString } from './utils/is'
-import { encode } from 'gpt-3-encoder'
-import fs from 'fs'
 
 const app = express()
 const router = express.Router()
@@ -21,15 +21,55 @@ app.all('*', (_, res, next) => {
   next()
 })
 
+router.post('/apiaaaaa/reset_token_counter', async (req, res) => {
+  try {
+    const { password } = req.body
+
+    if (!password || password !== process.env.RESET_PASSWORD)
+      return res.status(401).json({ message: 'Incorrect password.' })
+
+    const configPath = path.resolve(__dirname, 'config', 'config.json')
+    const configFile = fs.readFileSync(configPath)
+    const config = JSON.parse(configFile.toString())
+
+    // Reset the token counter
+    config.numberOfUsedTokens = 0
+
+    // Save the updated config back to the file
+    fs.writeFileSync(configPath, JSON.stringify(config))
+
+    res.status(200).json({ message: 'Token counter has been reset.' })
+  }
+  catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+router.get('/apiaaaaa/token_counter', async (_, res) => {
+  try {
+    const configPath = path.resolve(__dirname, 'config', 'config.json')
+    const configFile = fs.readFileSync(configPath)
+    const config = JSON.parse(configFile.toString())
+
+    res.status(200).json({ tokenCounter: config.numberOfUsedTokens })
+  }
+  catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 router.post('/chat-process', [auth, limiter], async (req, res) => {
   res.setHeader('Content-type', 'application/octet-stream')
-  let maxToken = process.env.MAX_TOKEN_LIMIT
-  const configFile = fs.readFileSync('./config/config.json')
+  const maxToken = process.env.MAX_TOKEN_LIMIT
+  const configPath = path.resolve(__dirname, 'config', 'config.json')
+  const configFile = fs.readFileSync(configPath)
+
   const config = JSON.parse(configFile.toString())
+
   try {
-    if(maxToken <= config.numberOfUsedTokens){
+    if (maxToken <= config.numberOfUsedTokens)
       throw new Error('额度已用完')
-    }
+
     const { prompt, options = {}, systemMessage } = req.body as RequestProps
     let firstChunk = true
     await chatReplyProcess({
@@ -41,8 +81,10 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       },
       systemMessage,
     })
-    config.numberOfUsedTokens += encode(prompt).length
-    fs.writeFileSync('./config/config.json', JSON.stringify(config))
+    // console.log('Encoded prompt length:', prompt.length)
+    config.numberOfUsedTokens += prompt.length
+    fs.writeFileSync(configPath, JSON.stringify(config))
+    // fs.writeFileSync('./config/config.json', JSON.stringify(config))
   }
   catch (error) {
     res.write(JSON.stringify(error))
