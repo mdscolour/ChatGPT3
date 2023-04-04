@@ -1,5 +1,5 @@
 import fs from 'fs'
-import path from 'path'
+// import path from 'path'
 import express from 'express'
 import type { RequestProps } from './types'
 import type { ChatMessage } from './chatgpt'
@@ -28,15 +28,16 @@ router.post('/apiaaaaa/reset_token_counter', async (req, res) => {
     if (!password || password !== process.env.RESET_PASSWORD)
       return res.status(401).json({ message: 'Incorrect password.' })
 
-    const configPath = path.resolve(__dirname, 'config', 'config.json')
-    const configFile = fs.readFileSync(configPath)
+    // const configPath = path.resolve(__dirname, 'config', 'config.json')
+    // const configFile = fs.readFileSync(configPath)
+    const configFile = fs.readFileSync('./src/config/config.json')
     const config = JSON.parse(configFile.toString())
 
     // Reset the token counter
     config.numberOfUsedTokens = 0
 
     // Save the updated config back to the file
-    fs.writeFileSync(configPath, JSON.stringify(config))
+    fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
 
     res.status(200).json({ message: 'Token counter has been reset.' })
   }
@@ -47,8 +48,9 @@ router.post('/apiaaaaa/reset_token_counter', async (req, res) => {
 
 router.get('/apiaaaaa/token_counter', async (_, res) => {
   try {
-    const configPath = path.resolve(__dirname, 'config', 'config.json')
-    const configFile = fs.readFileSync(configPath)
+  // const configPath = path.resolve(__dirname, 'config', 'config.json')
+  // const configFile = fs.readFileSync(configPath)
+    const configFile = fs.readFileSync('./src/config/config.json')
     const config = JSON.parse(configFile.toString())
 
     res.status(200).json({ tokenCounter: config.numberOfUsedTokens })
@@ -61,8 +63,9 @@ router.get('/apiaaaaa/token_counter', async (_, res) => {
 router.post('/chat-process', [auth, limiter], async (req, res) => {
   res.setHeader('Content-type', 'application/octet-stream')
   const maxToken = process.env.MAX_TOKEN_LIMIT
-  const configPath = path.resolve(__dirname, 'config', 'config.json')
-  const configFile = fs.readFileSync(configPath)
+  // const configPath = path.resolve(__dirname, 'config', 'config.json')
+  // const configFile = fs.readFileSync(configPath)
+  const configFile = fs.readFileSync('./src/config/config.json')
 
   const config = JSON.parse(configFile.toString())
 
@@ -83,8 +86,8 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
     })
     // console.log('Encoded prompt length:', prompt.length)
     config.numberOfUsedTokens += prompt.length
-    fs.writeFileSync(configPath, JSON.stringify(config))
-    // fs.writeFileSync('./config/config.json', JSON.stringify(config))
+    // fs.writeFileSync(configPath, JSON.stringify(config))
+    fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
   }
   catch (error) {
     res.write(JSON.stringify(error))
