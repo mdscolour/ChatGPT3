@@ -54,6 +54,32 @@ router.post('/apiaaaaa/reset_token_counter', async (req, res) => {
   }
 })
 
+router.post('/apiaaaaa/update_max_token_limit', async (req, res) => {
+  try {
+    const { password, newMaxTokenLimit } = req.body
+
+    if (!password || password !== process.env.RESET_PASSWORD)
+      return res.status(401).json({ message: 'Incorrect password.' })
+
+    if (!newMaxTokenLimit || typeof newMaxTokenLimit !== 'number')
+      return res.status(400).json({ message: 'Invalid max token limit value.' })
+
+    const configFile = fs.readFileSync('./src/config/config.json')
+    const config = JSON.parse(configFile.toString())
+
+    // Update the max token limit
+    config.maxTokenLimit = newMaxTokenLimit
+
+    // Save the updated config back to the file
+    fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
+
+    res.status(200).json({ message: 'Max token limit has been updated.' })
+  }
+  catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 router.get('/apiaaaaa/token_counter', async (_, res) => {
   try {
     const configFile = fs.readFileSync('./src/config/config.json')
@@ -68,10 +94,11 @@ router.get('/apiaaaaa/token_counter', async (_, res) => {
 
 router.post('/chat-process', [auth, limiter], async (req, res) => {
   res.setHeader('Content-type', 'application/octet-stream')
-  const maxToken = process.env.MAX_TOKEN_LIMIT
   const configFile = fs.readFileSync('./src/config/config.json')
 
   const config = JSON.parse(configFile.toString())
+
+  const maxToken = config.maxTokenLimit
 
   try {
     if (maxToken <= config.numberOfUsedTokens)
