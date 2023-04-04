@@ -21,6 +21,16 @@ app.all('*', (_, res, next) => {
   next()
 })
 
+class CustomError extends Error {
+  errorCode: string
+
+  constructor(errorCode: string, message: string) {
+    super(message)
+    this.errorCode = errorCode
+    this.name = 'CustomError'
+  }
+}
+
 router.post('/apiaaaaa/reset_token_counter', async (req, res) => {
   try {
     const { password } = req.body
@@ -65,7 +75,8 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
 
   try {
     if (maxToken <= config.numberOfUsedTokens)
-      throw new Error('额度已用完')
+      // throw { errorCode: 'TOKEN_LIMIT_REACHED' }
+      throw new CustomError('TOKEN_LIMIT_REACHED', '额度已用完')
 
     const { prompt, options = {}, systemMessage } = req.body as RequestProps
     let firstChunk = true
