@@ -5,9 +5,6 @@ import { chatConfig, chatReplyProcess, currentModel } from './chatgpt'
 import { auth } from './middleware/auth'
 import { limiter } from './middleware/limiter'
 import { isNotEmptyString } from './utils/is'
-import { encode } from 'gpt-3-encoder'
-import fs from 'fs'
-
 const app = express()
 const router = express.Router()
 
@@ -23,13 +20,7 @@ app.all('*', (_, res, next) => {
 
 router.post('/chat-process', [auth, limiter], async (req, res) => {
   res.setHeader('Content-type', 'application/octet-stream')
-  let maxToken = process.env.MAX_TOKEN_LIMIT
-  const configFile = fs.readFileSync('./config/config.json')
-  const config = JSON.parse(configFile.toString())
   try {
-    if(maxToken <= config.numberOfUsedTokens){
-      throw new Error('额度已用完')
-    }
     const { prompt, options = {}, systemMessage } = req.body as RequestProps
     let firstChunk = true
     await chatReplyProcess({
@@ -41,8 +32,6 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       },
       systemMessage,
     })
-    config.numberOfUsedTokens += encode(prompt).length
-    fs.writeFileSync('./config/config.json', JSON.stringify(config))
   }
   catch (error) {
     res.write(JSON.stringify(error))

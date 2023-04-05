@@ -10,6 +10,9 @@ import { sendResponse } from '../utils'
 import { isNotEmptyString } from '../utils/is'
 import type { ApiModel, ChatContext, ChatGPTUnofficialProxyAPIOptions, ModelConfig } from '../types'
 import type { RequestOptions } from './types'
+import { encode } from 'gpt-3-encoder'
+import fs from 'fs'
+let nodeENV = process.env
 
 const { HttpsProxyAgent } = httpsProxyAgent
 
@@ -90,6 +93,12 @@ let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
 async function chatReplyProcess(options: RequestOptions) {
   const { message, lastContext, process, systemMessage } = options
   try {
+    let maxToken = nodeENV.MAX_TOKEN_LIMIT
+    const configFile = fs.readFileSync(__dirname + '/../config/config.json')
+    const config = JSON.parse(configFile.toString())
+    if(maxToken <= config.numberOfUsedTokens){
+      return sendResponse({ type: 'Fail', message: "额度已用完" })
+    }
     let options: SendMessageOptions = { timeoutMs }
 
     if (apiModel === 'ChatGPTAPI') {
@@ -110,7 +119,21 @@ async function chatReplyProcess(options: RequestOptions) {
         process?.(partialResponse)
       },
     })
-
+    
+    let messageTokens = encode(message).length
+    console.log('Message Tokens: ' + messageTokens)
+    let joinedMessages = ''
+    response.messages.forEach(msg => {
+      joinedMessages += "role:'" + msg['role'] + "',content:'" + msg['content'] + "'";
+    });
+    console.log('Joined Messages: ', joinedMessages)
+    let joinedMessagesToken = encode(joinedMessages).length
+    console.log('Joined Tokens: ', joinedMessagesToken)
+    console.log('Prompt Tokens: ', messageTokens + joinedMessagesToken)
+    let completionsTokens = encode(response.text).length;
+    console.log('Completion Tokens: ',completionsTokens);
+    config.numberOfUsedTokens += messageTokens + joinedMessagesToken + completionsTokens;
+    fs.writeFileSync(__dirname + '/../config/config.json', JSON.stringify(config))
     return sendResponse({ type: 'Success', data: response })
   }
   catch (error: any) {
