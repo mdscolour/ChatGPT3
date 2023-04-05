@@ -1,6 +1,7 @@
 import fs from 'fs'
 import express from 'express'
-// import GPT3Tokenizer from 'gpt3-tokenizer'
+import GPT3Tokenizer from 'gpt3-tokenizer'
+// import { encode } from 'gpt-3-encoder'
 import type { RequestProps } from './types'
 import type { ChatMessage } from './chatgpt'
 import { chatConfig, chatReplyProcess, currentModel } from './chatgpt'
@@ -29,6 +30,26 @@ class CustomError extends Error {
     this.errorCode = errorCode
     this.name = 'CustomError'
   }
+}
+
+function findConnectedText(dataSources, parentMessageId) {
+  if (parentMessageId === null)
+    return null
+
+  const connectedText = []
+  let currentMessage = dataSources.find(
+    message => message.conversationOptions && message.conversationOptions.parentMessageId === parentMessageId,
+  )
+
+  while (currentMessage) {
+    connectedText.push(currentMessage.text)
+    connectedText.push(currentMessage.requestOptions.prompt)
+    currentMessage = dataSources.find(
+      message => message.conversationOptions && message.conversationOptions.parentMessageId === currentMessage.requestOptions.options.parentMessageId,
+    )
+  }
+
+  return connectedText
 }
 
 router.post('/apiaaaaa/reset_token_counter', async (req, res) => {
@@ -117,15 +138,18 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       systemMessage,
     })
 
-    // const tokenizer = new GPT3Tokenizer({ type: 'gpt3' }) // or 'codex'
-    // const messageWhole = JSON.stringify(systemMessage)
-    // const encoded = tokenizer.encode(messageWhole)
+    const connectedText = findConnectedText(options.dataSources, options.parentMessageId)
+    // console.log('connectedText： ', connectedText)
+    // console.log('connectedText： ', connectedText.join(', '))
+    // console.log('req body:', req.body)
 
-    // console.log('Original text:', messageWhole)
-    // console.log('Encoded text:', encoded.text.length)
-    // console.log('Encoded prompt length:', prompt.length)
+    const tokenizer = new GPT3Tokenizer({ type: 'gpt3' }) // or 'codex'
+    const encoded1 = tokenizer.encode(prompt)
+    const encoded2 = tokenizer.encode(connectedText.join(', '))
 
-    config.numberOfUsedTokens += 1
+    config.numberOfUsedTokens += encoded1.text.length + encoded2.text.length
+    // console.log('The token value: ', encoded1.text.length + encoded2.text.length)
+    // console.log('config.numberOfUsedTokens: ', config.numberOfUsedTokens)
     fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
   }
   catch (error) {

@@ -111,7 +111,7 @@ async function onConversation() {
     const fetchChatAPIOnce = async () => {
       await fetchChatAPIProcess<Chat.ConversationResponse>({
         prompt: message,
-        options,
+        options: { ...options, dataSources: dataSources.value }, // Pass the entire dataSources.value here
         signal: controller.signal,
         onDownloadProgress: ({ event }) => {
           const xhr = event.target
@@ -241,7 +241,7 @@ async function onRegenerate(index: number) {
     const fetchChatAPIOnce = async () => {
       await fetchChatAPIProcess<Chat.ConversationResponse>({
         prompt: message,
-        options,
+        options: { ...options, dataSources: dataSources.value }, // Pass the entire dataSources.value here
         signal: controller.signal,
         onDownloadProgress: ({ event }) => {
           const xhr = event.target
