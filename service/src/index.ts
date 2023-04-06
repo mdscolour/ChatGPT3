@@ -95,7 +95,6 @@ router.get('/apiaaaaa/token_counter', async (_, res) => {
 router.post('/chat-process', [auth, limiter], async (req, res) => {
   res.setHeader('Content-type', 'application/octet-stream')
   const configFile = fs.readFileSync('./src/config/config.json')
-
   const config = JSON.parse(configFile.toString())
 
   const maxToken = config.maxTokenLimit
@@ -121,12 +120,8 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
     // const messageWhole = JSON.stringify(systemMessage)
     // const encoded = tokenizer.encode(messageWhole)
 
-    // console.log('Original text:', messageWhole)
-    // console.log('Encoded text:', encoded.text.length)
-    // console.log('Encoded prompt length:', prompt.length)
-
-    config.numberOfUsedTokens += 1
-    fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
+    // config.numberOfUsedTokens += 1
+    // fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
   }
   catch (error) {
     res.write(JSON.stringify(error))

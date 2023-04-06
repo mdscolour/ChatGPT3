@@ -7,7 +7,7 @@ export interface SettingsState {
 }
 
 export function defaultSetting(): SettingsState {
-  const currentDate = new Date().toISOString().split('T')[0]
+  // const currentDate = new Date().toISOString().split('T')[0]
   return {
     systemMessage: 'None',
   }

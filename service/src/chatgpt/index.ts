@@ -1,3 +1,4 @@
+import fs from 'fs'
 import * as dotenv from 'dotenv'
 import 'isomorphic-fetch'
 import type { ChatGPTAPIOptions, ChatMessage, SendMessageOptions } from 'chatgpt'
@@ -6,6 +7,7 @@ import { SocksProxyAgent } from 'socks-proxy-agent'
 import httpsProxyAgent from 'https-proxy-agent'
 import fetch from 'node-fetch'
 import axios from 'axios'
+import { encode } from 'gpt-3-encoder'
 import { sendResponse } from '../utils'
 import { isNotEmptyString } from '../utils/is'
 import type { ApiModel, ChatContext, ChatGPTUnofficialProxyAPIOptions, ModelConfig } from '../types'
@@ -90,6 +92,9 @@ let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
 async function chatReplyProcess(options: RequestOptions) {
   const { message, lastContext, process, systemMessage } = options
   try {
+    const configFile = fs.readFileSync('./src/config/config.json')
+    const config = JSON.parse(configFile.toString())
+
     let options: SendMessageOptions = { timeoutMs }
 
     if (apiModel === 'ChatGPTAPI') {
@@ -110,6 +115,19 @@ async function chatReplyProcess(options: RequestOptions) {
         process?.(partialResponse)
       },
     })
+
+    // const messageTokens = encode(message).length
+
+    let joinedMessages = ''
+    response.messages.forEach((msg) => {
+      joinedMessages += msg.content
+      // joinedMessages += `role:'${msg.role}',content:'${msg.content}'`
+    })
+    const joinedMessagesToken = encode(joinedMessages).length
+    const completionsTokens = encode(response.text).length
+
+    config.numberOfUsedTokens += joinedMessagesToken + completionsTokens
+    fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
 
     return sendResponse({ type: 'Success', data: response })
   }
