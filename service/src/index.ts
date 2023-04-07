@@ -1,7 +1,6 @@
 import fs from 'fs'
 import express from 'express'
-import GPT3Tokenizer from 'gpt3-tokenizer'
-// import { encode } from 'gpt-3-encoder'
+import { encode } from 'gpt-3-encoder'
 import type { RequestProps } from './types'
 import type { ChatMessage } from './chatgpt'
 import { chatConfig, chatReplyProcess, currentModel } from './chatgpt'
@@ -139,17 +138,11 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
     })
 
     const connectedText = findConnectedText(options.dataSources, options.parentMessageId)
-    // console.log('connectedText： ', connectedText)
-    // console.log('connectedText： ', connectedText.join(', '))
-    // console.log('req body:', req.body)
 
-    const tokenizer = new GPT3Tokenizer({ type: 'gpt3' }) // or 'codex'
-    const encoded1 = tokenizer.encode(prompt)
-    const encoded2 = tokenizer.encode(connectedText.join(', '))
+    const encoded1 = encode(prompt).length
+    const encoded2 = encode(connectedText.join(', ')).length
 
-    config.numberOfUsedTokens += encoded1.text.length + encoded2.text.length
-    // console.log('The token value: ', encoded1.text.length + encoded2.text.length)
-    // console.log('config.numberOfUsedTokens: ', config.numberOfUsedTokens)
+    config.numberOfUsedTokens += encoded1 + encoded2
     fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
   }
   catch (error) {
