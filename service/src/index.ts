@@ -100,12 +100,24 @@ router.post('/apiaaaaa/update_max_token_limit', async (req, res) => {
   }
 })
 
-router.get('/apiaaaaa/token_counter', async (_, res) => {
+router.post('/apiaaaaa/token_counter', async (_, res) => {
   try {
     const configFile = fs.readFileSync('./src/config/config.json')
     const config = JSON.parse(configFile.toString())
 
     res.status(200).json({ tokenCounter: config.numberOfUsedTokens })
+  }
+  catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+router.post('/apiaaaaa/token_limit', async (_, res) => {
+  try {
+    const configFile = fs.readFileSync('./src/config/config.json')
+    const config = JSON.parse(configFile.toString())
+
+    res.status(200).json({ tokenLimit: config.maxTokenLimit })
   }
   catch (error) {
     res.status(500).json({ error: error.message })
