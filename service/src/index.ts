@@ -1,6 +1,5 @@
 import fs from 'fs'
 import express from 'express'
-// import GPT3Tokenizer from 'gpt3-tokenizer'
 import type { RequestProps } from './types'
 import type { ChatMessage } from './chatgpt'
 import { chatConfig, chatReplyProcess, currentModel } from './chatgpt'
@@ -80,12 +79,50 @@ router.post('/apiaaaaa/update_max_token_limit', async (req, res) => {
   }
 })
 
-router.get('/apiaaaaa/token_counter', async (_, res) => {
+router.post('/apiaaaaa/update_token_counter', async (req, res) => {
+  try {
+    const { password, newNumberOfUsedTokens } = req.body
+
+    if (!password || password !== process.env.RESET_PASSWORD)
+      return res.status(401).json({ message: 'Incorrect password.' })
+
+    if (!newNumberOfUsedTokens || typeof newNumberOfUsedTokens !== 'number')
+      return res.status(400).json({ message: 'Invalid max token limit value.' })
+
+    const configFile = fs.readFileSync('./src/config/config.json')
+    const config = JSON.parse(configFile.toString())
+
+    // Update the max token limit
+    config.numberOfUsedTokens = newNumberOfUsedTokens
+
+    // Save the updated config back to the file
+    fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
+
+    res.status(200).json({ message: 'Max token limit has been updated.' })
+  }
+  catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+router.post('/apiaaaaa/token_counter', async (_, res) => {
   try {
     const configFile = fs.readFileSync('./src/config/config.json')
     const config = JSON.parse(configFile.toString())
 
     res.status(200).json({ tokenCounter: config.numberOfUsedTokens })
+  }
+  catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+router.post('/apiaaaaa/token_limit', async (_, res) => {
+  try {
+    const configFile = fs.readFileSync('./src/config/config.json')
+    const config = JSON.parse(configFile.toString())
+
+    res.status(200).json({ tokenLimit: config.maxTokenLimit })
   }
   catch (error) {
     res.status(500).json({ error: error.message })
@@ -102,7 +139,6 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
 
   try {
     if (maxToken <= config.numberOfUsedTokens)
-      // throw { errorCode: 'TOKEN_LIMIT_REACHED' }
       throw new CustomError('TOKEN_LIMIT_REACHED', '额度已用完')
 
     const { prompt, options = {}, systemMessage } = req.body as RequestProps
@@ -117,15 +153,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
       systemMessage,
     })
 
-    // const tokenizer = new GPT3Tokenizer({ type: 'gpt3' }) // or 'codex'
-    // const messageWhole = JSON.stringify(systemMessage)
-    // const encoded = tokenizer.encode(messageWhole)
-
-    // console.log('Original text:', messageWhole)
-    // console.log('Encoded text:', encoded.text.length)
-    // console.log('Encoded prompt length:', prompt.length)
-
-    config.numberOfUsedTokens += 1
+    config.numberOfUsedTokens += 1 // add one, counting the question
     fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
   }
   catch (error) {
