@@ -100,6 +100,32 @@ router.post('/apiaaaaa/update_max_token_limit', async (req, res) => {
   }
 })
 
+router.post('/apiaaaaa/update_token_counter', async (req, res) => {
+  try {
+    const { password, newNumberOfUsedTokens } = req.body
+
+    if (!password || password !== process.env.RESET_PASSWORD)
+      return res.status(401).json({ message: 'Incorrect password.' })
+
+    if (!newNumberOfUsedTokens || typeof newNumberOfUsedTokens !== 'number')
+      return res.status(400).json({ message: 'Invalid max token limit value.' })
+
+    const configFile = fs.readFileSync('./src/config/config.json')
+    const config = JSON.parse(configFile.toString())
+
+    // Update the max token limit
+    config.numberOfUsedTokens = newNumberOfUsedTokens
+
+    // Save the updated config back to the file
+    fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
+
+    res.status(200).json({ message: 'Max token limit has been updated.' })
+  }
+  catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 router.post('/apiaaaaa/token_counter', async (_, res) => {
   try {
     const configFile = fs.readFileSync('./src/config/config.json')
