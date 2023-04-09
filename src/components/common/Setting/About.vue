@@ -12,6 +12,7 @@ interface ConfigState {
   socksProxy?: string
   httpsProxy?: string
   balance?: string
+  numberOfUsedTokens?: number // Add this line
 }
 
 const authStore = useAuthStore()
@@ -41,6 +42,10 @@ onMounted(() => {
 <template>
   <NSpin :show="loading">
     <div class="p-4 space-y-4">
+      <div class="p-4 space-y-4">
+        <p>已使用的Token数量：{{ config?.numberOfUsedTokens }}</p>
+      <!-- Other elements... -->
+      </div>
       <h2 class="text-xl font-bold">
         Version - {{ pkg.version }}
       </h2>

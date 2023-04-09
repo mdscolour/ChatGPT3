@@ -1,3 +1,4 @@
+import fs from 'fs'
 import * as dotenv from 'dotenv'
 import 'isomorphic-fetch'
 import type { ChatGPTAPIOptions, ChatMessage, SendMessageOptions } from 'chatgpt'
@@ -151,9 +152,15 @@ async function chatConfig() {
   const socksProxy = (process.env.SOCKS_PROXY_HOST && process.env.SOCKS_PROXY_PORT)
     ? (`${process.env.SOCKS_PROXY_HOST}:${process.env.SOCKS_PROXY_PORT}`)
     : '-'
+
+  // Read the config.json file
+  const configFile = fs.readFileSync('./src/config/config.json')
+  const config = JSON.parse(configFile.toString())
+  const numberOfUsedTokens = config.numberOfUsedTokens
+
   return sendResponse<ModelConfig>({
     type: 'Success',
-    data: { apiModel, reverseProxy, timeoutMs, socksProxy, httpsProxy, balance },
+    data: { apiModel, reverseProxy, timeoutMs, socksProxy, httpsProxy, balance, numberOfUsedTokens },
   })
 }
 
