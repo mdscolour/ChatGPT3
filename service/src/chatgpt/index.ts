@@ -146,21 +146,15 @@ async function fetchBalance() {
 }
 
 async function chatConfig() {
-  const balance = await fetchBalance()
-  const reverseProxy = process.env.API_REVERSE_PROXY ?? '-'
-  const httpsProxy = (process.env.HTTPS_PROXY || process.env.ALL_PROXY) ?? '-'
-  const socksProxy = (process.env.SOCKS_PROXY_HOST && process.env.SOCKS_PROXY_PORT)
-    ? (`${process.env.SOCKS_PROXY_HOST}:${process.env.SOCKS_PROXY_PORT}`)
-    : '-'
-
   // Read the config.json file
   const configFile = fs.readFileSync('./src/config/config.json')
   const config = JSON.parse(configFile.toString())
   const numberOfUsedTokens = config.numberOfUsedTokens
+  const maxTokenLimit = config.maxTokenLimit
 
   return sendResponse<ModelConfig>({
     type: 'Success',
-    data: { apiModel, reverseProxy, timeoutMs, socksProxy, httpsProxy, balance, numberOfUsedTokens },
+    data: { numberOfUsedTokens, maxTokenLimit },
   })
 }
 

@@ -22,13 +22,8 @@ export interface ChatGPTUnofficialProxyAPIOptions {
 }
 
 export interface ModelConfig {
-  apiModel: ApiModel
-  reverseProxy: string
-  timeoutMs: number
-  socksProxy: string
-  httpsProxy: string
-  balance: string
-  numberOfUsedTokens: number // Add this line
+  numberOfUsedTokens: number
+  maxTokenLimit: number
 }
 
 export type ApiModel = 'ChatGPTAPI' | 'ChatGPTUnofficialProxyAPI' | undefined
