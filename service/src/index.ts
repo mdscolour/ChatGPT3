@@ -180,7 +180,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
     const encoded1 = encode(prompt).length
     const encoded2 = encode(connectedText.join(', ')).length
 
-    config.numberOfUsedTokens += encoded1 + encoded2
+    config.numberOfUsedTokens += Math.round(0.8 * (encoded1 + encoded2))
     fs.writeFileSync('./src/config/config.json', JSON.stringify(config))
   }
   catch (error) {
